@@ -1,17 +1,19 @@
-name: Terraform Azure Deployment
+name: Terraform Azure CI/CD
 
 on:
   push:
     branches:
       - main
-      - develop
-      - feature/*
+      - 'feature/*'
   pull_request:
     branches:
       - main
 
+permissions:
+  contents: read
+  id-token: write
+
 env:
-  TF_LOG: INFO
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
   ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
@@ -19,22 +21,11 @@ env:
 
 jobs:
   terraform:
-    name: Terraform Deploy
+    name: Terraform Workflow
     runs-on: ubuntu-latest
 
-    permissions:
-      id-token: write
-      contents: read
-
-    strategy:
-      matrix:
-        env:
-          - dev
-          - staging
-          - prod
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Terraform
@@ -42,29 +33,109 @@ jobs:
         with:
           terraform_version: 1.9.5
 
-      - name: Select Environment
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/*' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod'
+      # 🧪 Step 1: Detect Environment Based on Branch
+      - name: Set environment
+        id: envselect
         run: |
-          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
-            ENV="dev"
+          BRANCH="${GITHUB_REF##*/}"
+          echo "Branch: $BRANCH"
+          if [[ "$BRANCH" == main ]]; then
+            # Running on main branch -> production deploy
+            echo "env_name=prod" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH" == staging ]]; then
+            echo "env_name=staging" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH" == feature/* ]]; then
+            echo "env_name=dev" >> $GITHUB_OUTPUT
           else
-            ENV="${GITHUB_REF##*/}"
+            # default dev for feature branches or PRs
+            echo "env_name=dev" >> $GITHUB_OUTPUT
           fi
-          echo "ENVIRONMENT=$ENV" >> $GITHUB_ENV
 
-      - name: Initialize Terraform
-        working-directory: terraform/envs/${{ env.ENVIRONMENT }}
+      # 🧩 Step 2: Terraform Init
+      - name: Terraform Init
+        working-directory: terraform/envs/${{ steps.envselect.outputs.env_name }}
         run: terraform init -input=false
 
-      - name: Validate Terraform
-        working-directory: terraform/envs/${{ env.ENVIRONMENT }}
+      # 🧩 Step 3: Terraform Validate
+      - name: Terraform Validate
+        working-directory: terraform/envs/${{ steps.envselect.outputs.env_name }}
         run: terraform validate
 
+      # 🧩 Step 4: Terraform Plan (always)
       - name: Terraform Plan
-        working-directory: terraform/envs/${{ env.ENVIRONMENT }}
+        id: plan
+        working-directory: terraform/envs/${{ steps.envselect.outputs.env_name }}
+        run: terraform plan -input=false -out=tfplan
+
+      # 🧩 Step 5: Upload plan as artifact (useful for review)
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ steps.envselect.outputs.env_name }}
+          path: terraform/envs/${{ steps.envselect.outputs.env_name }}/tfplan
+
+  # ---------------------------------------
+  # 🔶 STAGING Deployment (Manual Approval)
+  # ---------------------------------------
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: terraform
+    environment:
+      name: staging
+      url: ${{ steps.output_url.outputs.app_url || '' }}
+    if: github.ref == 'refs/heads/main'  # triggered when PR merged to main
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Terraform Init
+        working-directory: terraform/envs/staging
+        run: terraform init -input=false
+
+      - name: Terraform Plan
+        working-directory: terraform/envs/staging
         run: terraform plan -out=tfplan -input=false
 
       - name: Terraform Apply
-        if: github.ref != 'refs/heads/main'
-        working-directory: terraform/envs/${{ env.ENVIRONMENT }}
+        working-directory: terraform/envs/staging
+        run: terraform apply -auto-approve -input=false tfplan
+
+  # ---------------------------------------
+  # 🔵 PRODUCTION Deployment (Manual Approval)
+  # ---------------------------------------
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment:
+      name: prod
+      url: ${{ steps.output_url.outputs.app_url || '' }}
+    if: github.ref == 'refs/heads/main'  # triggered after staging
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Terraform Init
+        working-directory: terraform/envs/prod
+        run: terraform init -input=false
+
+      - name: Terraform Plan
+        working-directory: terraform/envs/prod
+        run: terraform plan -out=tfplan -input=false
+
+      - name: Terraform Apply
+        working-directory: terraform/envs/prod
         run: terraform apply -auto-approve -input=false tfplan
