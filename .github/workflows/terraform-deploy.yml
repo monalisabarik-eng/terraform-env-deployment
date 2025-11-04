@@ -1,0 +1,70 @@
+name: Terraform Azure Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/*
+  pull_request:
+    branches:
+      - main
+
+env:
+  TF_LOG: INFO
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+jobs:
+  terraform:
+    name: Terraform Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    strategy:
+      matrix:
+        env:
+          - dev
+          - staging
+          - prod
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Select Environment
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/*' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod'
+        run: |
+          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
+            ENV="dev"
+          else
+            ENV="${GITHUB_REF##*/}"
+          fi
+          echo "ENVIRONMENT=$ENV" >> $GITHUB_ENV
+
+      - name: Initialize Terraform
+        working-directory: terraform/envs/${{ env.ENVIRONMENT }}
+        run: terraform init -input=false
+
+      - name: Validate Terraform
+        working-directory: terraform/envs/${{ env.ENVIRONMENT }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: terraform/envs/${{ env.ENVIRONMENT }}
+        run: terraform plan -out=tfplan -input=false
+
+      - name: Terraform Apply
+        if: github.ref != 'refs/heads/main'
+        working-directory: terraform/envs/${{ env.ENVIRONMENT }}
+        run: terraform apply -auto-approve -input=false tfplan
