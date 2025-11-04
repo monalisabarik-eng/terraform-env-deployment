@@ -39,35 +39,43 @@ jobs:
         run: |
           BRANCH="${GITHUB_REF##*/}"
           echo "Branch: $BRANCH"
-          if [[ "$BRANCH" == main ]]; then
-            # Running on main branch -> production deploy
+          if [[ "$BRANCH" == "main" ]]; then
             echo "env_name=prod" >> $GITHUB_OUTPUT
-          elif [[ "$BRANCH" == staging ]]; then
+          elif [[ "$BRANCH" == "staging" ]]; then
             echo "env_name=staging" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == feature/* ]]; then
             echo "env_name=dev" >> $GITHUB_OUTPUT
           else
-            # default dev for feature branches or PRs
             echo "env_name=dev" >> $GITHUB_OUTPUT
           fi
 
+      # ✅ Debug: confirm directory exists
+      - name: Show repository structure
+        run: |
+          echo "Repository structure:"
+          pwd
+          ls -R .
+
       # 🧩 Step 2: Terraform Init
       - name: Terraform Init
-        working-directory: terraform/envs/${{ steps.envselect.outputs.env_name }}
-        run: terraform init -input=false
+        run: |
+          cd ./terraform/envs/${{ steps.envselect.outputs.env_name }}
+          terraform init -input=false
 
       # 🧩 Step 3: Terraform Validate
       - name: Terraform Validate
-        working-directory: terraform/envs/${{ steps.envselect.outputs.env_name }}
-        run: terraform validate
+        run: |
+          cd ./terraform/envs/${{ steps.envselect.outputs.env_name }}
+          terraform validate
 
-      # 🧩 Step 4: Terraform Plan (always)
+      # 🧩 Step 4: Terraform Plan
       - name: Terraform Plan
         id: plan
-        working-directory: terraform/envs/${{ steps.envselect.outputs.env_name }}
-        run: terraform plan -input=false -out=tfplan
+        run: |
+          cd ./terraform/envs/${{ steps.envselect.outputs.env_name }}
+          terraform plan -input=false -out=tfplan
 
-      # 🧩 Step 5: Upload plan as artifact (useful for review)
+      # 🧩 Step 5: Upload plan as artifact
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:
@@ -75,7 +83,7 @@ jobs:
           path: terraform/envs/${{ steps.envselect.outputs.env_name }}/tfplan
 
   # ---------------------------------------
-  # 🔶 STAGING Deployment (Manual Approval)
+  # 🔶 STAGING Deployment
   # ---------------------------------------
   deploy-staging:
     name: Deploy to Staging
@@ -84,7 +92,7 @@ jobs:
     environment:
       name: staging
       url: ${{ steps.output_url.outputs.app_url || '' }}
-    if: github.ref == 'refs/heads/main'  # triggered when PR merged to main
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
@@ -96,19 +104,22 @@ jobs:
           terraform_version: 1.9.5
 
       - name: Terraform Init
-        working-directory: terraform/envs/staging
-        run: terraform init -input=false
+        run: |
+          cd ./terraform/envs/staging
+          terraform init -input=false
 
       - name: Terraform Plan
-        working-directory: terraform/envs/staging
-        run: terraform plan -out=tfplan -input=false
+        run: |
+          cd ./terraform/envs/staging
+          terraform plan -out=tfplan -input=false
 
       - name: Terraform Apply
-        working-directory: terraform/envs/staging
-        run: terraform apply -auto-approve -input=false tfplan
+        run: |
+          cd ./terraform/envs/staging
+          terraform apply -auto-approve -input=false tfplan
 
   # ---------------------------------------
-  # 🔵 PRODUCTION Deployment (Manual Approval)
+  # 🔵 PRODUCTION Deployment
   # ---------------------------------------
   deploy-prod:
     name: Deploy to Production
@@ -117,7 +128,7 @@ jobs:
     environment:
       name: prod
       url: ${{ steps.output_url.outputs.app_url || '' }}
-    if: github.ref == 'refs/heads/main'  # triggered after staging
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
@@ -129,13 +140,16 @@ jobs:
           terraform_version: 1.9.5
 
       - name: Terraform Init
-        working-directory: terraform/envs/prod
-        run: terraform init -input=false
+        run: |
+          cd ./terraform/envs/prod
+          terraform init -input=false
 
       - name: Terraform Plan
-        working-directory: terraform/envs/prod
-        run: terraform plan -out=tfplan -input=false
+        run: |
+          cd ./terraform/envs/prod
+          terraform plan -out=tfplan -input=false
 
       - name: Terraform Apply
-        working-directory: terraform/envs/prod
-        run: terraform apply -auto-approve -input=false tfplan
+        run: |
+          cd ./terraform/envs/prod
+          terraform apply -auto-approve -input=false tfplan
