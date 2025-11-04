@@ -1,46 +1,48 @@
 terraform {
   required_version = ">= 1.5.0"
-
-  backend "azurerm" {
-    resource_group_name  = "rg-tfstate"
-    storage_account_name = "tfstateaccount"
-    container_name       = "tfstate"
-    key                  = "dev.terraform.tfstate"
-  }
 }
 
 provider "azurerm" {
   features {}
 }
 
+# --- NETWORK ---
 module "network" {
   source              = "../../modules/network"
-  prefix              = "dev"
-  location            = "eastus"
-  resource_group_name = "rg-dev"
-  address_space       = ["10.0.0.0/16"]
-  subnets = {
-    app = "10.0.1.0/24"
-    db  = "10.0.2.0/24"
-  }
+  prefix              = var.prefix
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  address_space       = var.address_space
+  subnets             = var.subnets
 }
 
+# --- COMPUTE ---
 module "compute" {
   source              = "../../modules/compute"
-  prefix              = "dev"
-  location            = "eastus"
-  resource_group_name = "rg-dev"
+  prefix              = var.prefix
+  location            = var.location
+  resource_group_name = var.resource_group_name
   subnet_id           = module.network.subnet_ids["app"]
-  ssh_public_key      = file("~/.ssh/id_rsa.pub")
+  vm_size             = var.vm_size
+  admin_username      = var.admin_username
+  ssh_public_key      = file(var.ssh_public_key_path)
 }
 
+# --- APP SERVICE ---
 module "app" {
   source              = "../../modules/app"
-  prefix              = "dev"
-  location            = "eastus"
-  resource_group_name = "rg-dev"
+  prefix              = var.prefix
+  location            = var.location
+  resource_group_name = var.resource_group_name
 }
 
+# --- OUTPUTS ---
 output "app_url" {
-  value = module.app.app_url
+  description = "Application URL"
+  value       = module.app.app_url
+}
+
+output "vm_ip" {
+  description = "Compute VM NIC private IP"
+  value       = module.compute.prefix
 }
