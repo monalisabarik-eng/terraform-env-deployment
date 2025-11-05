@@ -44,5 +44,6 @@ output "app_url" {
 
 output "vm_ip" {
   description = "Compute VM NIC private IP"
-  value       = module.compute.prefix
+  value       = module.compute.private_ip_address
 }
+
