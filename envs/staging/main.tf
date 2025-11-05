@@ -6,6 +6,7 @@ provider "azurerm" {
   features {}
 }
 
+# --- NETWORK ---
 module "network" {
   source              = "../../modules/network"
   prefix              = var.prefix
@@ -15,6 +16,7 @@ module "network" {
   subnets             = var.subnets
 }
 
+# --- COMPUTE ---
 module "compute" {
   source              = "../../modules/compute"
   prefix              = var.prefix
@@ -23,9 +25,10 @@ module "compute" {
   subnet_id           = module.network.subnet_ids["app"]
   vm_size             = var.vm_size
   admin_username      = var.admin_username
-  ssh_public_key      = file(var.ssh_public_key_path)
+  ssh_public_key      = var.ssh_public_key
 }
 
+# --- APP SERVICE ---
 module "app" {
   source              = "../../modules/app"
   prefix              = var.prefix
@@ -33,7 +36,13 @@ module "app" {
   resource_group_name = var.resource_group_name
 }
 
+# --- OUTPUTS ---
 output "app_url" {
   description = "Application URL"
   value       = module.app.app_url
+}
+
+output "vm_ip" {
+  description = "Compute VM NIC private IP"
+  value       = module.compute.private_ip_address
 }
