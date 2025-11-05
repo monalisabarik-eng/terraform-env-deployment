@@ -29,19 +29,6 @@ module "compute" {
   ssh_public_key      = var.ssh_public_key
 }
 
-# --- APP SERVICE ---
-module "app" {
-  source              = "../../modules/app"
-  prefix              = var.prefix
-  location            = var.location
-  resource_group_name = var.resource_group_name
-}
-
-# --- OUTPUTS ---
-output "app_url" {
-  description = "Application URL"
-  value       = module.app.app_url
-}
 
 output "vm_ip" {
   description = "Compute VM NIC private IP"

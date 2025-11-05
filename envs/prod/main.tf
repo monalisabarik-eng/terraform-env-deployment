@@ -26,14 +26,3 @@ module "compute" {
   ssh_public_key      = file(var.ssh_public_key_path)
 }
 
-module "app" {
-  source              = "../../modules/app"
-  prefix              = var.prefix
-  location            = var.location
-  resource_group_name = var.resource_group_name
-}
-
-output "app_url" {
-  description = "Application URL"
-  value       = module.app.app_url
-}
