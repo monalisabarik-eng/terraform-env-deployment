@@ -4,6 +4,7 @@ terraform {
 
 provider "azurerm" {
   features {}
+  subscription_id = "d6cfe0c7-7d73-4345-acf9-c1c4bb7ba564"
 }
 
 module "network" {
@@ -23,6 +24,6 @@ module "compute" {
   subnet_id           = module.network.subnet_ids["app"]
   vm_size             = var.vm_size
   admin_username      = var.admin_username
-  ssh_public_key      = file(var.ssh_public_key_path)
+  ssh_public_key      = var.ssh_public_key
 }
 
