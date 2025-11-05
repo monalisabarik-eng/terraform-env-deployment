@@ -33,4 +33,9 @@ resource "azurerm_linux_virtual_machine" "vm" {
     sku       = "20_04-lts-gen2"
     version   = "latest"
   }
+
 }
+output "private_ip_address" {
+  value = azurerm_network_interface.nic.private_ip_address
+}
+
