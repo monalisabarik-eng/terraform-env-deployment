@@ -25,7 +25,7 @@ module "compute" {
   subnet_id           = module.network.subnet_ids["app"]
   vm_size             = var.vm_size
   admin_username      = var.admin_username
-  ssh_public_key      = file(var.ssh_public_key_path)
+  ssh_public_key      = var.ssh_public_key
 }
 
 # --- APP SERVICE ---
