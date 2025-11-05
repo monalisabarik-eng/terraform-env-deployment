@@ -33,7 +33,7 @@ variable "admin_username" {
   description = "VM admin username"
 }
 
-variable "ssh_public_key_path" {
+variable "ssh_public_key" {
+  description = "Path to SSH public key for VM access"
   type        = string
-  description = "Path to SSH public key"
 }
