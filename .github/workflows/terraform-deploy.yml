@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - main
+      - develop
       - 'feature/*'
   pull_request:
     branches:
       - main
+      - develop
 
 permissions:
   contents: read
@@ -41,7 +43,7 @@ jobs:
           echo "Branch: $BRANCH"
           if [[ "$BRANCH" == "main" ]]; then
             echo "env_name=prod" >> $GITHUB_OUTPUT
-          elif [[ "$BRANCH" == "staging" ]]; then
+          elif [[ "$BRANCH" == "develop" ]]; then
             echo "env_name=staging" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == feature/* ]]; then
             echo "env_name=dev" >> $GITHUB_OUTPUT
@@ -92,7 +94,7 @@ jobs:
     environment:
       name: staging
       url: ${{ steps.output_url.outputs.app_url || '' }}
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/develop'
 
     steps:
       - name: Checkout
