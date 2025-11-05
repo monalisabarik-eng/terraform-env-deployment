@@ -3,12 +3,12 @@ name: Terraform Azure CI/CD
 on:
   push:
     branches:
-      - main
-      - develop
+      - master
       - 'feature/*'
+      - develop
   pull_request:
     branches:
-      - main
+      - master
       - develop
 
 permissions:
@@ -41,7 +41,7 @@ jobs:
         run: |
           BRANCH="${GITHUB_REF##*/}"
           echo "Branch: $BRANCH"
-          if [[ "$BRANCH" == "main" ]]; then
+          if [[ "$BRANCH" == "master" ]]; then
             echo "env_name=prod" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "develop" ]]; then
             echo "env_name=staging" >> $GITHUB_OUTPUT
@@ -130,7 +130,7 @@ jobs:
     environment:
       name: prod
       url: ${{ steps.output_url.outputs.app_url || '' }}
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
 
     steps:
       - name: Checkout
