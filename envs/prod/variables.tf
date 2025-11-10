@@ -11,7 +11,7 @@ variable "location" {
 variable "resource_group_name" {
   type        = string
   description = "Azure resource group name"
-  default     = "rg-prod"
+  default     = "rg-tf-prod"
 }
 
 variable "address_space" {
@@ -59,4 +59,9 @@ variable "tenant_id" {
 variable "subscription_id" {
   description = "The Azure subscription ID."
   type        = string
+}
+
+variable "environment" {
+  type        = string
+  description = "Deployment environment (e.g., dev, prod)"
 }

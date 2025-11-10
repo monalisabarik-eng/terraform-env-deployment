@@ -17,6 +17,7 @@ module "network" {
   resource_group_name = var.resource_group_name
   address_space       = var.address_space
   subnets             = var.subnets
+  environment         = var.environment
 }
 
 module "compute" {
