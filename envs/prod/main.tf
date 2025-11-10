@@ -4,7 +4,10 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = "d6cfe0c7-7d73-4345-acf9-c1c4bb7ba564"
+  subscription_id = var.subscription_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
+  tenant_id       = var.tenant_id
 }
 
 module "network" {

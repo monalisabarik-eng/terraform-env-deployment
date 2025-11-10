@@ -38,3 +38,20 @@ variable "ssh_public_key" {
   description = "Path to SSH public key for VM access"
   type        = string
 }
+
+variable "subscription_id" {
+  type = string
+}
+
+variable "client_id" {
+  type = string
+}
+
+variable "client_secret" {
+  type = string
+  sensitive = true
+}
+
+variable "tenant_id" {
+  type = string
+}
