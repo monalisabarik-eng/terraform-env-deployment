@@ -11,6 +11,7 @@ variable "location" {
 variable "resource_group_name" {
   type        = string
   description = "Azure resource group name"
+  default     = "rg-staging"
 }
 
 variable "address_space" {
