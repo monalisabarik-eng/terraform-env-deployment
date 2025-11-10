@@ -41,20 +41,20 @@ variable "ssh_public_key" {
   type        = string
 }
 
-variable "subscription_id" {
+variable "TF_VAR_SUBSCRIPTION_ID" {
   type = string
 }
 
-variable "client_id" {
+variable "TF_VAR_CLIENT_ID" {
   type = string
 }
 
-variable "client_secret" {
+variable "TF_VAR_client_secret" {
   type = string
   sensitive = true
 }
 
-variable "tenant_id" {
+variable "TF_VAR_TENANT_ID" {
   type = string
 }
 
