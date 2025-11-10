@@ -4,10 +4,10 @@ terraform {
 
 provider "azurerm" {
   features {}
-  TF_VAR_SUBSCRIPTION_ID = var.TF_VAR_SUBSCRIPTION_ID
-  TF_VAR_CLIENT_ID       = var.TF_VAR_CLIENT_ID
-  TF_VAR_client_secret   = var.TF_VAR_client_secret
-  TF_VAR_TENANT_ID       = var.TF_VAR_TENANT_ID
+  # TF_VAR_SUBSCRIPTION_ID = var.TF_VAR_SUBSCRIPTION_ID
+  # TF_VAR_CLIENT_ID       = var.TF_VAR_CLIENT_ID
+  # TF_VAR_client_secret   = var.TF_VAR_client_secret
+  # TF_VAR_TENANT_ID       = var.TF_VAR_TENANT_ID
 }
 
 # --- NETWORK ---
