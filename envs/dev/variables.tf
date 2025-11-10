@@ -62,3 +62,9 @@ variable "subscription_id" {
   description = "The Azure subscription ID."
   type        = string
 }
+
+variable "environments" {
+  description = "Deployment environment (e.g., dev, prod)"
+  type        = string
+  default     = "dev"
+}
