@@ -6,7 +6,7 @@ address_space = ["10.2.0.0/16"]
 
 subnets = {
   app = "10.2.1.0/24"
-  db  = "10.2.2.0/24"
+  # db  = "10.2.2.0/24"
 }
 
 vm_size             = "Standard_B2ms"
