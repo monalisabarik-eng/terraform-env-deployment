@@ -11,6 +11,7 @@ variable "location" {
 variable "resource_group_name" {
   type        = string
   description = "Azure resource group name"
+  default     = "rg-prod"
 }
 
 variable "address_space" {
@@ -38,3 +39,24 @@ variable "ssh_public_key" {
   type        = string
 }
 
+variable "client_id" {
+  description = "The Azure client ID for the service principal."
+  type        = string
+  sensitive   = true
+}
+
+variable "client_secret" {
+  description = "The Azure client secret for the service principal."
+  type        = string
+  sensitive   = true
+}
+
+variable "tenant_id" {
+  description = "The Azure tenant ID."
+  type        = string
+}
+
+variable "subscription_id" {
+  description = "The Azure subscription ID."
+  type        = string
+}

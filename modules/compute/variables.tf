@@ -1,11 +1,14 @@
 variable "prefix" {
   type = string
+  default = "dev"
 }
 variable "location" {
   type = string
+  default = "eastus"
 }
 variable "resource_group_name" {
   type = string
+  default = "rg-dev"
 }
 variable "subnet_id" {
   type = string
