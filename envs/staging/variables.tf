@@ -39,19 +39,24 @@ variable "ssh_public_key" {
   type        = string
 }
 
-variable "TF_VAR_SUBSCRIPTION_ID" {
-  type = string
+variable "client_id" {
+  description = "The Azure client ID for the service principal."
+  type        = string
+  sensitive   = true
 }
 
-variable "TF_VAR_CLIENT_ID" {
-  type = string
+variable "client_secret" {
+  description = "The Azure client secret for the service principal."
+  type        = string
+  sensitive   = true
 }
 
-variable "TF_VAR_client_secret" {
-  type = string
-  sensitive = true
+variable "tenant_id" {
+  description = "The Azure tenant ID."
+  type        = string
 }
 
-variable "TF_VAR_TENANT_ID" {
-  type = string
+variable "subscription_id" {
+  description = "The Azure subscription ID."
+  type        = string
 }
