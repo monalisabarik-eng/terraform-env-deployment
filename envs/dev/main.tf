@@ -29,7 +29,7 @@ module "compute" {
 }
 
 
-output "vm_ip" {
-  description = "Compute VM NIC private IP"
-  value       = module.compute.prefix
-}
+# output "vm_ip" {
+#   description = "Compute VM NIC private IP"
+#   value       = module.compute.prefix
+# }

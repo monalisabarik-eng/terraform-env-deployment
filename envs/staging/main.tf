@@ -30,7 +30,7 @@ module "compute" {
 }
 
 
-output "vm_ip" {
-  description = "Compute VM NIC private IP"
-  value       = module.compute.private_ip_address
-}
+# output "vm_ip" {
+#   description = "Compute VM NIC private IP"
+#   value       = module.compute.private_ip_address
+# }
